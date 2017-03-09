@@ -1,0 +1,19 @@
+[package]
+name = "tk-listen"
+description = """
+    A set of helper futures allowing to listen TCP (or unix) socket with
+    resource limits and proper error handling.
+"""
+license = "MIT/Apache-2.0"
+readme = "README.rst"
+keywords = ["listen", "tcp", "tokio", "bind"]
+categories = ["Asynchronous", "Network programming"]
+homepage = "http://github.com/tailhook/tk-listen"
+documentation = "http://docs.rs/tk-listen"
+version = "0.1.0"
+authors = ["paul@colomiets.name"]
+
+[dependencies]
+tokio-core = "0.1.2"
+futures = "0.1.10"
+log = "0.3.7"
