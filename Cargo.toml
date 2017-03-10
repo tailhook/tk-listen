@@ -17,3 +17,7 @@ authors = ["paul@colomiets.name"]
 tokio-core = "0.1.2"
 futures = "0.1.10"
 log = "0.3.7"
+
+[dev-dependencies]
+tk-http = "0.1.2"
+env_logger = "0.4.2"
