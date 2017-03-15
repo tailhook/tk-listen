@@ -7,16 +7,18 @@ extern crate env_logger;
 #[macro_use] extern crate log;
 
 use std::env;
+use std::time::Duration;
 
 use tokio_core::reactor::Core;
 use tokio_core::io::Io;
-use futures::{Future, empty};
+use tokio_core::net::{TcpListener};
+use futures::{Future, Stream};
 use futures::future::{FutureResult, ok};
 
 use tk_http::{Status};
 use tk_http::server::buffered::{Request, BufferedDispatcher};
 use tk_http::server::{self, Encoder, EncoderDone, Proto, Error};
-use tk_listen::spawn_tcp;
+use tk_listen::ListenExt;
 
 const BODY: &'static str = "Hello World!";
 
@@ -41,18 +43,21 @@ fn main() {
 
     let mut lp = Core::new().unwrap();
     let h1 = lp.handle();
+    let h2 = lp.handle();
 
     let addr = "0.0.0.0:8080".parse().unwrap();
     let scfg = server::Config::new().done();
-    let lcfg = tk_listen::Config::new().done();
+    let listener = TcpListener::bind(&addr, &lp.handle()).unwrap();
 
-    spawn_tcp(addr, &lcfg, &lp.handle(), empty::<(), ()>(),
-        move |socket, addr| {
+    lp.run(
+        listener.incoming()
+        .sleep_on_error(Duration::from_millis(100), &h2)
+        .map(move |(socket, addr)| {
             Proto::new(socket, &scfg,
                 BufferedDispatcher::new(addr, &h1, || service),
                 &h1)
             .map_err(|e| { println!("Connection error: {}", e); })
-        }).expect("listen error");
-
-    lp.run(empty::<(), ()>()).unwrap();
+        })
+        .listen(1000)  // max connections
+    ).unwrap();
 }
