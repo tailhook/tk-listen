@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use futures::{Stream, Future, IntoFuture};
+use futures::{Stream, IntoFuture};
 use tokio_core::reactor::Handle;
 
 use sleep_on_error;
