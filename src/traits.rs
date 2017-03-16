@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use futures::Stream;
+use futures::{Stream, Future, IntoFuture};
 use tokio_core::reactor::Handle;
 
 use sleep_on_error;
@@ -15,6 +15,7 @@ pub trait ListenExt: Stream {
     }
     fn listen(self, max_connections: usize) -> listen::Listen<Self>
         where Self: Sized,
+              Self::Item: IntoFuture<Item=(), Error=()>,
     {
         listen::new(self, max_connections)
     }

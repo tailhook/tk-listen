@@ -56,6 +56,7 @@ fn main() {
             Proto::new(socket, &scfg,
                 BufferedDispatcher::new(addr, &h1, || service),
                 &h1)
+            // Log error, effectively making error type of a future nil `()`
             .map_err(|e| { println!("Connection error: {}", e); })
         })
         .listen(1000)  // max connections
