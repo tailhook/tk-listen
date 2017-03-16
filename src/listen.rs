@@ -14,6 +14,11 @@ struct MapSwallowErrors<S: Stream>(S)
 
 
 
+/// A structure returned by `ListenExt::listen`
+///
+/// This is a future that returns when incoming stream has been closed and
+/// all connections (futures) have been processed. It uses `BufferUnordered`
+/// inside to do heavy lifting.
 pub struct Listen<S: Stream>
     where S::Item: IntoFuture<Item=(), Error=()>,
 {

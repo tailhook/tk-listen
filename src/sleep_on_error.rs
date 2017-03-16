@@ -19,6 +19,10 @@ fn connection_error(e: &io::Error) -> bool {
 }
 
 
+/// A structure returned by `ListenExt::sleep_on_error`
+///
+/// This is a stream that filters original stream for errors, ignores some
+/// of them and sleeps on severe ones.
 pub struct SleepOnError<S> {
     stream: S,
     delay: Duration,
