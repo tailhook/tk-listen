@@ -23,25 +23,25 @@ Example
 
 Here is the basic example:
 
-```rust,ignore
-let TIME_TO WAIT_ON_ERROR = Duration::from_millis(100);
-let MAX_SIMULTANEOUS_CONNECTIONS = 1000;
+.. code-block:: rust
 
-let mut lp = Core::new().unwrap();
-let listener = TcpListener::bind(&addr, &lp.handle()).unwrap();
-lp.run(
-    listener.incoming()
-    .sleep_on_error(TIME_TO_WAIT_ON_ERROR, &h2)
-    .map(move |(mut socket, _addr)| {
-         // Your future is here:
-         Proto::new(socket)
-         // Errors should not pass silently
-         // common idea is to log them
-         .map_err(|e| error!("Protocol error: {}", e))
-    })
-    .listen(MAX_SIMULTANEOUS_CONNECTIONS)
-).unwrap(); // stream doesn't end in this case
-```
+    let TIME_TO WAIT_ON_ERROR = Duration::from_millis(100);
+    let MAX_SIMULTANEOUS_CONNECTIONS = 1000;
+
+    let mut lp = Core::new().unwrap();
+    let listener = TcpListener::bind(&addr, &lp.handle()).unwrap();
+    lp.run(
+        listener.incoming()
+        .sleep_on_error(TIME_TO_WAIT_ON_ERROR, &h2)
+        .map(move |(mut socket, _addr)| {
+             // Your future is here:
+             Proto::new(socket)
+             // Errors should not pass silently
+             // common idea is to log them
+             .map_err(|e| error!("Protocol error: {}", e))
+        })
+        .listen(MAX_SIMULTANEOUS_CONNECTIONS)
+    ).unwrap(); // stream doesn't end in this case
 
 More in docs_ and examples_
 
