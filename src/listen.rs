@@ -34,14 +34,15 @@ impl<S: Stream> Future for Listen<S>
     type Item = ();
     type Error = S::Error;
     fn poll(&mut self) -> Result<Async<()>, S::Error> {
-        println!("listen wakeup");
-        match self.buffer.poll()? {
-            // Some future just finished, okay
-            Async::Ready(Some(())) => Ok(Async::NotReady),
-            // No future ready
-            Async::NotReady => Ok(Async::NotReady),
-            // Stream is done
-            Async::Ready(None) => Ok(Async::Ready(())),
+        loop {
+            match self.buffer.poll()? {
+                // Some future just finished, let's check for next one
+                Async::Ready(Some(())) => continue,
+                // No future ready
+                Async::NotReady => return Ok(Async::NotReady),
+                // Stream is done
+                Async::Ready(None) => return Ok(Async::Ready(())),
+            }
         }
     }
 }
