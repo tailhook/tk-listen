@@ -26,7 +26,7 @@
 //!  Simple example looks like this:
 //!
 //!  ```rust,ignore
-//!    let TIME_TO WAIT_ON_ERROR = Duration::from_millis(100);
+//!    let TIME_TO_WAIT_ON_ERROR = Duration::from_millis(100);
 //!    let MAX_SIMULTANEOUS_CONNECTIONS = 1000;
 //!
 //!    let mut lp = Core::new().unwrap();
