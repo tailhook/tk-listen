@@ -5,7 +5,7 @@ description = """
     resource limits and proper error handling.
 """
 license = "MIT/Apache-2.0"
-readme = "README.rst"
+readme = "README.md"
 keywords = ["listen", "tcp", "tokio", "bind"]
 categories = ["Asynchronous", "Network programming"]
 homepage = "http://github.com/tailhook/tk-listen"
