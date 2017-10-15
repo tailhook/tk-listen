@@ -1,7 +1,7 @@
 //!  A library that allows to listen network sockets with proper resource
 //!  limits and error handling.
 //!
-//!  Library constists of two simple combinators:
+//!  Library constists of three things:
 //!
 //!  * [`sleep_on_error`][1] -- filters `Stream` of accepted sockets for
 //!    errors.  Simple errors like `ConnectionReset` are just ignored. Severe
@@ -14,12 +14,17 @@
 //!    every connection error would shut down the whole stream). And returns
 //!    `ForEach`-like future, you can `run()` or combine with other futures.
 //!    [Stands for code like this][5].
+//!  * [`BindMany`] allows to bind to list of addresses and update that list
+//!    (i.e. allow configuration reload), resulting into a single stream with
+//!    accepted sockets. This a good idea to use it with [abstract-ns] to
+//!    resolve list of names to addresses and keep them updated.
 //!
 //!  [1]: trait.ListenExt.html#method.sleep_on_error
 //!  [2]: https://git.io/vy9vi#L41-L52
 //!  [3]: trait.ListenExt.html#method.listen
 //!  [4]: https://docs.rs/futures/0.1.11/futures/stream/trait.Stream.html#method.buffer_unordered
 //!  [5]: https://git.io/vy9vi#L56-L59
+//!  [abstract-ns]: https://docs.rs/abstract-ns
 //!
 //!  # Example
 //!
@@ -81,7 +86,7 @@ extern crate tokio_core;
 
 #[macro_use] extern crate log;
 
-
+mod bind;
 mod traits;
 mod sleep_on_error;
 mod listen;
@@ -89,3 +94,4 @@ mod listen;
 pub use traits::ListenExt;
 pub use sleep_on_error::SleepOnError;
 pub use listen::Listen;
+pub use bind::BindMany;
