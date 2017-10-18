@@ -22,6 +22,11 @@ use tokio_core::reactor::{Handle, Timeout};
 /// Instead of failing on bind error it logs the error and retries in a
 /// second (you can change the delay using `BindMany::retry_interval`)
 ///
+/// It's good idea to pass a stream with a **Void** error, because on receiving
+/// error `BindMany` will log a message (that doesn't contain an error) and
+/// will shutdown. It's better to log specific error and send end-of-stream
+/// instead, but that is user's responsibility.
+///
 /// Note: we track identity of the sockets by `SocketAddr` used to bind it,
 /// this means `0.0.0.0` and `127.0.0.1` for example can be bound/unbound
 /// independently despite the fact that `0.0.0.0` can accept connections for
