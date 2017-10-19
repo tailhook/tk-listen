@@ -22,7 +22,7 @@ log = "0.3.7"
 [dev-dependencies]
 tk-http = "0.3.1"
 env_logger = "0.4.2"
-abstract-ns = { git="https://github.com/tailhook/abstract-ns", rev="6e6f565" }
-ns-router = { git="https://github.com/tailhook/ns-router", rev="75883c3" }
-ns-std-threaded = { git="https://github.com/tailhook/abstract-ns", rev="6e6f565" }
+abstract-ns = "0.4.0"
+ns-router = "0.1.0"
+ns-std-threaded = "0.3.0"
 
