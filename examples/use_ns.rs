@@ -12,7 +12,7 @@ use std::io::Write;
 use std::env;
 use std::time::Duration;
 
-use abstract_ns::ResolveHost;
+use abstract_ns::HostResolve;
 use tokio_core::reactor::{Core, Timeout};
 use futures::{Future, Stream};
 use ns_router::SubscribeExt;
