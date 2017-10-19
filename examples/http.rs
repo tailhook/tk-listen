@@ -1,17 +1,16 @@
 extern crate tokio_core;
+extern crate tokio_io;
 extern crate futures;
 extern crate tk_http;
 extern crate tk_listen;
 extern crate env_logger;
 
-#[macro_use] extern crate log;
-
 use std::env;
 use std::time::Duration;
 
 use tokio_core::reactor::Core;
-use tokio_core::io::Io;
 use tokio_core::net::{TcpListener};
+use tokio_io::{AsyncRead, AsyncWrite};
 use futures::{Future, Stream};
 use futures::future::{FutureResult, ok};
 
@@ -22,7 +21,7 @@ use tk_listen::ListenExt;
 
 const BODY: &'static str = "Hello World!";
 
-fn service<S:Io>(_: Request, mut e: Encoder<S>)
+fn service<S:AsyncRead+AsyncWrite>(_: Request, mut e: Encoder<S>)
     -> FutureResult<EncoderDone<S>, Error>
 {
     e.status(Status::Ok);
