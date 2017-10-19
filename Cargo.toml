@@ -21,9 +21,7 @@ log = "0.3.7"
 [dev-dependencies]
 tk-http = "0.1.2"
 env_logger = "0.4.2"
-abstract-ns = { git="https://github.com/tailhook/abstract-ns", rev="a9ee116" }
-ns-router = { git="https://github.com/tailhook/ns-router", rev="9a3ac16" }
-ns-std-threaded = { git="https://github.com/tailhook/abstract-ns", rev="a9ee116" }
+abstract-ns = { git="https://github.com/tailhook/abstract-ns", rev="05a90ed" }
+ns-router = { git="https://github.com/tailhook/ns-router", rev="4ae9f52" }
+ns-std-threaded = { git="https://github.com/tailhook/abstract-ns", rev="05a90ed" }
 
-[patch.crates-io]
-abstract-ns = { git="https://github.com/tailhook/abstract-ns", rev="a9ee116" }

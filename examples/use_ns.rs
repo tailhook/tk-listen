@@ -42,7 +42,7 @@ fn main() {
     lp.run(
         BindMany::new(
             ns.subscribe_many(&["localhost"], 8080)
-                .map(|a| a.at(0).addresses().collect::<Vec<_>>()),
+                .map(|a| a.addresses_at(0)),
             &h1)
         .sleep_on_error(Duration::from_millis(100), &h2)
         .map(move |(mut socket, _addr)| {
