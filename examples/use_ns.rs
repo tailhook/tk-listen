@@ -1,8 +1,6 @@
-extern crate abstract_ns;
 extern crate env_logger;
 extern crate futures;
-extern crate ns_router;
-extern crate ns_std_threaded;
+extern crate ns_env_config;
 extern crate tk_listen;
 extern crate tokio_core;
 
@@ -12,10 +10,8 @@ use std::io::Write;
 use std::env;
 use std::time::Duration;
 
-use abstract_ns::HostResolve;
 use tokio_core::reactor::{Core, Timeout};
 use futures::{Future, Stream};
-use ns_router::SubscribeExt;
 
 use tk_listen::{ListenExt, BindMany};
 
@@ -30,12 +26,7 @@ fn main() {
     let h1 = lp.handle();
     let h2 = lp.handle();
 
-    let ns = ns_router::Router::from_config(&ns_router::Config::new()
-        .set_fallthrough(ns_std_threaded::ThreadedResolver::new()
-            .null_service_resolver()
-            .interval_subscriber(Duration::new(1, 0), &h1))
-        .done(),
-        &lp.handle());
+    let ns = ns_env_config::init(&lp.handle()).unwrap();
 
     println!("This program will listen on `localhost:8080`. \
               You can edit the /etc/hosts and see rebinds.");

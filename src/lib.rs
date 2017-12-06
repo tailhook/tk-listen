@@ -25,6 +25,7 @@
 //!  [4]: https://docs.rs/futures/0.1.11/futures/stream/trait.Stream.html#method.buffer_unordered
 //!  [5]: https://git.io/vy9vi#L56-L59
 //!  [abstract-ns]: https://docs.rs/abstract-ns
+//!  [`BindMany`]: struct.BindMany.html
 //!
 //!  # Example
 //!

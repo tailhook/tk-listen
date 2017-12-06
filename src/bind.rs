@@ -31,6 +31,49 @@ use tokio_core::reactor::{Handle, Timeout};
 /// this means `0.0.0.0` and `127.0.0.1` for example can be bound/unbound
 /// independently despite the fact that `0.0.0.0` can accept connections for
 /// `127.0.0.1`.
+///
+///  # Example
+///
+///  Simple example:
+///
+///  ```rust,ignore
+///    lp.run(
+///        BindMany::new(address_stream)
+///        .sleep_on_error(TIME_TO_WAIT_ON_ERROR, &h2)
+///        .map(move |(mut socket, _addr)| {
+///             // Your future is here:
+///             Proto::new(socket)
+///             // Errors should not pass silently
+///             // common idea is to log them
+///             .map_err(|e| error!("Protocol error: {}", e))
+///        })
+///        .listen(MAX_SIMULTANEOUS_CONNECTIONS)
+///    ).unwrap(); // stream doesn't end in this case
+///  ```
+///
+///  Example using name resolution via abstract-ns + ns-env-config:
+///
+///  ```rust,ignore
+///      extern crate ns_env_config;
+///
+///      let mut lp = Core::new().unwrap();
+///      let ns = ns_env_config::init(&lp.handle()).unwrap();
+///      lp.run(
+///          BindMany::new(ns.resolve_auto("localhost", 8080)
+///             .map(|addr| addr.addresses_at(0)))
+///          .sleep_on_error(TIME_TO_WAIT_ON_ERROR, &h2)
+///          .map(move |(mut socket, _addr)| {
+///               // Your future is here:
+///               Proto::new(socket)
+///               // Errors should not pass silently
+///               // common idea is to log them
+///               .map_err(|e| eprintln!("Protocol error: {}", e))
+///          })
+///          .listen(MAX_SIMULTANEOUS_CONNECTIONS)
+///      ).unwrap(); // stream doesn't end in this case
+///  ```
+///
+///
 pub struct BindMany<S> {
     addresses: S,
     retry_interval: Duration,
