@@ -1,8 +1,8 @@
 use std::io;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use futures::{Future, Stream, Async};
-use tokio_core::reactor::{Handle, Timeout};
+use tokio::timer::Delay;
 
 
 /// This function defines errors that are per-connection. Which basically
@@ -26,17 +26,14 @@ fn connection_error(e: &io::Error) -> bool {
 pub struct SleepOnError<S> {
     stream: S,
     delay: Duration,
-    handle: Handle,
-    timeout: Option<Timeout>,
+    timeout: Option<Delay>,
 }
 
-pub fn new<S>(stream: S, delay: Duration, handle: &Handle)
-    -> SleepOnError<S>
+pub fn new<S>(stream: S, delay: Duration) -> SleepOnError<S>
 {
     SleepOnError {
         stream: stream,
         delay: delay,
-        handle: handle.clone(),
         timeout: None,
     }
 }
@@ -46,7 +43,7 @@ impl<I, S: Stream<Item=I, Error=io::Error>> Stream for SleepOnError<S> {
     type Error = ();
     fn poll(&mut self) -> Result<Async<Option<I>>, ()> {
         if let Some(ref mut to) = self.timeout {
-            match to.poll().expect("timeout never fails") {
+            match to.poll().expect("delay never fails") {
                 Async::Ready(_) => {}
                 Async::NotReady => return Ok(Async::NotReady),
             }
@@ -59,14 +56,13 @@ impl<I, S: Stream<Item=I, Error=io::Error>> Stream for SleepOnError<S> {
                 Err(e) => {
                     debug!("Accept error: {}. Sleeping {:?}...",
                         e, self.delay);
-                    let mut timeout = Timeout::new(self.delay, &self.handle)
-                        .expect("can always set a timeout");
-                    let result = timeout.poll()
-                        .expect("timeout never fails");
+                    let mut delay = Delay::new(Instant::now() + self.delay);
+                    let result = delay.poll()
+                        .expect("delay never fails");
                     match result {
                         Async::Ready(()) => continue,
                         Async::NotReady => {
-                            self.timeout = Some(timeout);
+                            self.timeout = Some(delay);
                             return Ok(Async::NotReady);
                         }
                     }

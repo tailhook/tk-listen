@@ -20,9 +20,11 @@
 //!    resolve list of names to addresses and keep them updated.
 //!
 //!  [1]: trait.ListenExt.html#method.sleep_on_error
+//!  TODO: Update
 //!  [2]: https://git.io/vy9vi#L41-L52
 //!  [3]: trait.ListenExt.html#method.listen
 //!  [4]: https://docs.rs/futures/0.1.11/futures/stream/trait.Stream.html#method.buffer_unordered
+//!  TODO: Update
 //!  [5]: https://git.io/vy9vi#L56-L59
 //!  [abstract-ns]: https://docs.rs/abstract-ns
 //!  [`BindMany`]: struct.BindMany.html
@@ -35,17 +37,22 @@
 //!    let TIME_TO_WAIT_ON_ERROR = Duration::from_millis(100);
 //!    let MAX_SIMULTANEOUS_CONNECTIONS = 1000;
 //!
-//!    let mut lp = Core::new().unwrap();
-//!    let listener = TcpListener::bind(&addr, &lp.handle()).unwrap();
+//!    let listener = TcpListener::bind(&addr).unwrap();
 //!    lp.run(
 //!        listener.incoming()
-//!        .sleep_on_error(TIME_TO_WAIT_ON_ERROR, &h2)
-//!        .map(move |(mut socket, _addr)| {
+//!        .sleep_on_error(TIME_TO_WAIT_ON_ERROR)
+//!        .map(move |mut socket| {
 //!             // Your future is here:
 //!             Proto::new(socket)
 //!             // Errors should not pass silently
 //!             // common idea is to log them
-//!             .map_err(|e| error!("Protocol error: {}", e))
+//!             .map(|result| {
+//!                 match result {
+//!                     Ok(_) => (),
+//!                     Err(e) => error!("Conn error: {}", e),
+//!                 }
+//!             })
+//!             .map_err(|_| ())
 //!        })
 //!        .listen(MAX_SIMULTANEOUS_CONNECTIONS)
 //!    ).unwrap(); // stream doesn't end in this case
@@ -60,13 +67,19 @@
 //!    let (tx, rx) = oneshot::channel();
 //!    lp.run(
 //!        listener.incoming()
-//!        .sleep_on_error(TIME_TO_WAIT_ON_ERROR, &h2)
-//!        .map(move |(mut socket, _addr)| {
+//!        .sleep_on_error(TIME_TO_WAIT_ON_ERROR)
+//!        .map(move |mut socket| {
 //!             // Your future is here:
 //!             Proto::new(socket)
 //!             // Errors should not pass silently
 //!             // common Idea is to log them
-//!             .map_err(|e| error!("Protocol error: {}", e))
+//!             .map(|result| {
+//!                 match result {
+//!                     Ok(_) => (),
+//!                     Err(e) => error!("Conn error: {}", e),
+//!                 }
+//!             })
+//!             .map_err(|_| ())
 //!        })
 //!        .listen(MAX_SIMULTANEOUS_CONNECTIONS)
 //!        .select(|_| rx)
@@ -83,7 +96,8 @@
 #![warn(missing_docs)]
 
 extern crate futures;
-extern crate tokio_core;
+extern crate tokio;
+extern crate tokio_timer;
 
 #[macro_use] extern crate log;
 

@@ -2,11 +2,11 @@ use std::collections::HashMap;
 use std::io;
 use std::mem;
 use std::net::SocketAddr;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use futures::{Future, Stream, Async};
-use tokio_core::net::{TcpListener, Incoming, TcpStream};
-use tokio_core::reactor::{Handle, Timeout};
+use tokio::net::{TcpListener, Incoming, TcpStream};
+use tokio::timer::Delay;
 
 
 
@@ -77,20 +77,18 @@ use tokio_core::reactor::{Handle, Timeout};
 pub struct BindMany<S> {
     addresses: S,
     retry_interval: Duration,
-    retry_timer: Option<(Timeout, Vec<SocketAddr>)>,
+    retry_timer: Option<(Delay, Vec<SocketAddr>)>,
     inputs: HashMap<SocketAddr, Incoming>,
-    handle: Handle,
 }
 
 impl<S> BindMany<S> {
     /// Create a new instance
-    pub fn new(s: S, handle: &Handle) -> BindMany<S>
+    pub fn new(s: S) -> BindMany<S>
     {
         BindMany {
             addresses: s,
             retry_interval: Duration::new(1, 0),
             retry_timer: None,
-            handle: handle.clone(),
             inputs: HashMap::new(),
         }
     }
@@ -118,7 +116,7 @@ impl<S> Stream for BindMany<S>
     where S: Stream,
         S::Item: IntoIterator<Item=SocketAddr>,
 {
-    type Item = (TcpStream, SocketAddr);
+    type Item = TcpStream;
     type Error = io::Error;
     fn poll(&mut self) -> Result<Async<Option<Self::Item>>, io::Error> {
         loop {
@@ -135,7 +133,7 @@ impl<S> Stream for BindMany<S>
                         if let Some(listener) = old.remove(&addr) {
                             self.inputs.insert(addr, listener);
                         } else {
-                            match TcpListener::bind(&addr, &self.handle) {
+                            match TcpListener::bind(&addr) {
                                 Ok(l) =>  {
                                     self.inputs.insert(addr, l.incoming());
                                 }
@@ -150,9 +148,7 @@ impl<S> Stream for BindMany<S>
                     }
                     if backlog.len() > 0 {
                         self.retry_timer = Some((
-                            Timeout::new(self.retry_interval,
-                                 &self.handle)
-                            .expect("timeout never fails"),
+                            Delay::new(Instant::now() + self.retry_interval),
                             backlog));
                     } else {
                         self.retry_timer = None;
@@ -167,10 +163,10 @@ impl<S> Stream for BindMany<S>
         }
         loop {
             if let Some((ref mut timer, ref mut backlog)) = self.retry_timer {
-                match timer.poll().expect("timeout never fails") {
+                match timer.poll().expect("deadline never fails") {
                     Async::Ready(()) => {
                         for addr in mem::replace(backlog, Vec::new()) {
-                            match TcpListener::bind(&addr, &self.handle) {
+                            match TcpListener::bind(&addr) {
                                 Ok(l) =>  {
                                     self.inputs.insert(addr, l.incoming());
                                 }
@@ -184,9 +180,9 @@ impl<S> Stream for BindMany<S>
                             }
                         }
                         if backlog.len() > 0 {
-                            *timer = Timeout::new(
-                                self.retry_interval, &self.handle)
-                                .expect("timeout never fails");
+                            *timer = Delay::new(
+                                Instant::now() + self.retry_interval
+                            );
                             continue;  // need to poll timer
                         }
                         // fallthrough to cleaning timer

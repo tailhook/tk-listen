@@ -1,4 +1,4 @@
-extern crate tokio_core;
+extern crate tokio;
 extern crate futures;
 extern crate tk_listen;
 extern crate env_logger;
@@ -7,9 +7,11 @@ extern crate env_logger;
 
 use std::io::Write;
 use std::env;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
-use tokio_core::reactor::{Core, Timeout, Interval};
+use tokio::runtime::Runtime;
+use tokio::timer::{Delay, Interval};
+
 use futures::{Future, Stream, Sink};
 use futures::sync::mpsc::channel;
 
@@ -22,37 +24,47 @@ fn main() {
     }
     env_logger::init().expect("init logging");
 
-    let mut lp = Core::new().unwrap();
-    let h1 = lp.handle();
-    let h2 = lp.handle();
-
     let addr1 = "0.0.0.0:8001".parse().unwrap();
     let addr2 = "0.0.0.0:8002".parse().unwrap();
     let (mut tx, rx) = channel(1);
-    let listener = BindMany::new(rx.map_err(|_| "Error"), &h1);
+    let listener = BindMany::new(rx.map_err(|_| "Error"));
     let mut n = 0;
     tx.start_send(vec![addr1]).unwrap();
 
     println!("This program will alternate listening \
              on ports 8001, 8002 each five seconds");
-    h1.spawn(Interval::new(Duration::new(5, 0), &h1).unwrap()
-        .for_each(move |()| {
-            n += 1;
-            let addr = if n % 2 == 0  { addr1 } else { addr2 };
-            println!("Listening on {:?}", addr);
-            tx.start_send(vec![addr]).unwrap();
-            Ok(())
-        })
-        .map_err(|_| unreachable!()));
-    lp.run(
+
+    let mut runtime = Runtime::new().unwrap();
+
+    runtime.spawn(
         listener
-        .sleep_on_error(Duration::from_millis(100), &h2)
-        .map(move |(mut socket, _addr)| {
-            Timeout::new(Duration::from_millis(500), &h1).unwrap()
-            .and_then(move |_| socket.write(b"hello\n"))
-            .map(|_nbytes| ())
-            .map_err(|e| error!("Conn error: {}", e))
+        .sleep_on_error(Duration::from_millis(100))
+        .map(move |mut socket| {
+            Delay::new(Instant::now() + Duration::from_millis(500))
+            .map(move |_| socket.write(b"hello\n"))
+            .map(|result| {
+                match result {
+                    Ok(_) => (),
+                    Err(e) => error!("Conn error: {}", e),
+                }
+            })
+            .map_err(|_| ())
         })
         .listen(1000)  // max connections
-    ).unwrap();
+    );
+
+    tokio::run(
+        Interval::new(
+            Instant::now() + Duration::new(5, 0),
+            Duration::new(5, 0)
+        )
+            .for_each(move |_| {
+                n += 1;
+                let addr = if n % 2 == 0  { addr1 } else { addr2 };
+                println!("Listening on {:?}", addr);
+                tx.start_send(vec![addr]).unwrap();
+                Ok(())
+            })
+            .map_err(|_| unreachable!())
+    );
 }
