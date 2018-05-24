@@ -10,7 +10,7 @@ keywords = ["listen", "tcp", "tokio", "bind"]
 categories = ["Asynchronous", "Network programming"]
 homepage = "http://github.com/tailhook/tk-listen"
 documentation = "http://docs.rs/tk-listen"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["paul@colomiets.name"]
 
 [dependencies]
