@@ -1,3 +1,7 @@
+// http doesn't work on tokio yet
+fn main() {
+}
+/*
 extern crate tokio_core;
 extern crate tokio_io;
 extern crate futures;
@@ -61,3 +65,4 @@ fn main() {
         .listen(1000)  // max connections
     ).unwrap();
 }
+*/

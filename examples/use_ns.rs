@@ -1,3 +1,7 @@
+// http doesn't work on tokio yet
+fn main() {
+}
+/*
 extern crate env_logger;
 extern crate futures;
 extern crate ns_env_config;
@@ -45,3 +49,4 @@ fn main() {
         .listen(1000)  // max connections
     ).unwrap();
 }
+*/
