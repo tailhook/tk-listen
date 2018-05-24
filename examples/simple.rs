@@ -21,7 +21,7 @@ fn main() {
     if env::var("RUST_LOG").is_err() {
         env::set_var("RUST_LOG", "info");
     }
-    env_logger::init().expect("init logging");
+    env_logger::init();
 
     let addr = "0.0.0.0:8080".parse().unwrap();
     let listener = TcpListener::bind(&addr).unwrap();

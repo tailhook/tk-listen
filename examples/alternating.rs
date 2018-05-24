@@ -22,7 +22,7 @@ fn main() {
     if env::var("RUST_LOG").is_err() {
         env::set_var("RUST_LOG", "info");
     }
-    env_logger::init().expect("init logging");
+    env_logger::init();
 
     let addr1 = "0.0.0.0:8001".parse().unwrap();
     let addr2 = "0.0.0.0:8002".parse().unwrap();
