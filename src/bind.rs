@@ -2,10 +2,11 @@ use std::collections::HashMap;
 use std::io;
 use std::mem;
 use std::net::SocketAddr;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 use futures::{Future, Stream, Async};
 use tokio::net::{TcpListener, Incoming, TcpStream};
+use tokio::clock;
 use tokio::timer::Delay;
 
 
@@ -148,7 +149,7 @@ impl<S> Stream for BindMany<S>
                     }
                     if backlog.len() > 0 {
                         self.retry_timer = Some((
-                            Delay::new(Instant::now() + self.retry_interval),
+                            Delay::new(clock::now() + self.retry_interval),
                             backlog));
                     } else {
                         self.retry_timer = None;
@@ -181,7 +182,7 @@ impl<S> Stream for BindMany<S>
                         }
                         if backlog.len() > 0 {
                             *timer = Delay::new(
-                                Instant::now() + self.retry_interval
+                                clock::now() + self.retry_interval
                             );
                             continue;  // need to poll timer
                         }

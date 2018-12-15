@@ -7,8 +7,9 @@ extern crate env_logger;
 
 use std::io::Write;
 use std::env;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
+use tokio::clock;
 use tokio::runtime::Runtime;
 use tokio::timer::{Delay, Interval};
 
@@ -40,7 +41,7 @@ fn main() {
         listener
         .sleep_on_error(Duration::from_millis(100))
         .map(move |mut socket| {
-            Delay::new(Instant::now() + Duration::from_millis(500))
+            Delay::new(clock::now() + Duration::from_millis(500))
             .map(move |_| socket.write(b"hello\n"))
             .map(|result| {
                 match result {
@@ -55,7 +56,7 @@ fn main() {
 
     tokio::run(
         Interval::new(
-            Instant::now() + Duration::new(5, 0),
+            clock::now() + Duration::new(5, 0),
             Duration::new(5, 0)
         )
             .for_each(move |_| {

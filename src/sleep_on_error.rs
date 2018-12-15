@@ -1,7 +1,8 @@
 use std::io;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 use futures::{Future, Stream, Async};
+use tokio::clock;
 use tokio::timer::Delay;
 
 
@@ -56,7 +57,7 @@ impl<I, S: Stream<Item=I, Error=io::Error>> Stream for SleepOnError<S> {
                 Err(e) => {
                     debug!("Accept error: {}. Sleeping {:?}...",
                         e, self.delay);
-                    let mut delay = Delay::new(Instant::now() + self.delay);
+                    let mut delay = Delay::new(clock::now() + self.delay);
                     let result = delay.poll()
                         .expect("delay never fails");
                     match result {
